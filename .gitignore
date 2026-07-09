@@ -1,0 +1,10 @@
+# Godot 4 editor / import cache
+/.godot/
+
+# Web export / bundle output (see README for the export command)
+/dist-web/
+/dist/
+/build/
+
+# Godot editor-local settings
+export_presets.cfg
