@@ -1,8 +1,8 @@
 # CLAUDE.md — minit-godot
 
-Minit Games SDK for the Godot engine (prototype, not yet a git repo; intended public repo once promoted: `Minit-Games/minit-godot`), letting Godot creators publish a game to the Minit platform. Full maintainer reference — the `window.minit` contract, shared engine-facade pattern, distribution/release philosophy, and per-engine gotchas — lives in the consolidated SDK-maintenance doc: https://github.com/Minit-Games/minit-root/blob/develop/docs/sdk-maintenance.md
+Minit Games SDK for the Godot engine (public repo `Minit-Games/minit-godot`; still prototype-stage — see the README's Prototype status), letting Godot creators publish a game to the Minit platform. Full maintainer reference — the `window.minit` contract, shared engine-facade pattern, distribution/release philosophy, and per-engine gotchas — lives in the consolidated SDK-maintenance doc: https://github.com/Minit-Games/minit-root/blob/develop/docs/sdk-maintenance.md
 
-## Release process (once a real repo)
+## Release process
 
 Godot addons are consumed as **source** via the Asset Library — no build/publish
 pipeline (unlike `minit-sdk`'s npm publish). A release is a tag + Asset Library
