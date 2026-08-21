@@ -6,16 +6,16 @@ inside the Minit host, so it talks to the host-injected `window.minit` runtime
 **directly** — via Godot's built-in
 [`JavaScriptBridge`](https://docs.godotengine.org/en/stable/classes/class_javascriptbridge.html)
 singleton. No bundler, no npm dependency, no CDN fetch. This is the same design
-decision the [Unity SDK](../minit-unity/), [Defold SDK](../minit-defold/), and
-[PlayCanvas SDK](../minit-playcanvas/) made: the GDScript API surface maps 1:1 to
-the `window.minit` contract, so host behaviour is identical across engines.
+decision the Unity SDK, [Defold SDK](https://github.com/Minit-Games/minit-defold),
+and PlayCanvas SDK made: the GDScript API surface maps 1:1 to the `window.minit`
+contract, so host behaviour is identical across engines.
 
-> **Prototype status.** This is a scaffold for review — a facade addon plus
-> docs, no sample game. It is not yet published to the Godot Asset Library, not
-> yet a git repo, and lives under the gitignored `external/` directory. The
-> `window.minit` bridge snippets mirror the [Defold SDK](../minit-defold/), which
-> was built and validated end-to-end against a mock host; the Godot bundle has
-> **not** yet been exported/validated — see open questions.
+> **Prototype status.** A facade addon plus docs — there is no sample game yet,
+> and the addon is not yet published to the Godot Asset Library. The
+> `window.minit` bridge snippets mirror the
+> [Defold SDK](https://github.com/Minit-Games/minit-defold), which was built and
+> validated end-to-end against a mock host; the Godot bundle has **not** yet
+> been exported/validated — see open questions.
 
 > **Engine build.** Use the **standard (GDScript) Godot build**, not the .NET /
 > C# build. The facade is plain GDScript and needs no .NET toolchain. (A C#
@@ -111,7 +111,7 @@ specifics:
 
 - **Export not yet validated.** Unlike the Defold prototype (built end-to-end
   with `bob`), no Godot Web bundle has been exported and run against a mock host
-  yet. Do that before the real repo — confirm `JavaScriptBridge.eval` returns the
+  yet. Do that before publishing to the Asset Library — confirm `JavaScriptBridge.eval` returns the
   expected primitives for each call and the bundle loads in the host iframe.
 - **`JavaScriptBridge.eval` vs `get_interface`.** The facade uses eval-string +
   JSON (mirroring Defold's `html5.run`) because it's simple and robust for
