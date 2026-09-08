@@ -56,6 +56,8 @@ func _ready():
 
 func _on_game_over(final_score: int):
     # Submit the final result — call exactly once at game end. Higher score = better.
+    # Time-based games (meta.json resultSorting fastestTime/slowestTime): pass SECONDS,
+    # not ms — e.g. report_result(elapsed_seconds), fractions allowed.
     Minit.report_result(final_score, {
         "flavor_text": "Cleared the last wave with 1 HP left",
         "user_data": "5",   # optional; omit to leave the stored slot unchanged. "" is a valid write.
@@ -70,6 +72,8 @@ gracefully: writes become a `print`, and reads fall back to URL query params
 
 ### Contract details (identical to `@minit-games/sdk`)
 
+- **`report_result`**'s `score` is seconds (fractions allowed), never milliseconds,
+  when the game's `resultSorting` is `"fastestTime"` / `"slowestTime"`.
 - **`report_result`** wraps `user_data` into `{ value: "<string>" }` on the wire
   to match `UserDataPatchSchema` in `@minit/shared/zod`. Games pass a bare
   string; the wrapping is an SDK-internal detail.

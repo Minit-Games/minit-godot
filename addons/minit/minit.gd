@@ -40,6 +40,9 @@ func loading_done() -> void:
 ## Submit the final result. Call exactly once when the game ends.
 ## Higher score = better by default.
 ##
+## score: for time-based games (resultSorting fastestTime/slowestTime) this is
+##        SECONDS, not ms; fractions allowed (42.5).
+##
 ## options: {
 ##   flavor_text: String,  # short session caption for the host result screen / feed
 ##   delay:       int,      # ms the host waits before showing the result screen
