@@ -16,7 +16,7 @@ extends Node
 ## e.g. `Minit.report_result(score)`.
 
 ## SDK version of this copy — compare against the KB article if you pasted it in.
-const VERSION := "0.1.0"
+const VERSION := "0.1.1"
 
 const RESERVED_CONFIG_KEY := "userData"
 const LOG_PREFIX := "[Minit]"
