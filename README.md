@@ -54,6 +54,17 @@ func _ready():
     # Read this player's persisted userData slot (String | null).
     var saved = Minit.get_user_data()
 
+    # Show the first-play tutorial only when this returns true.
+    if Minit.should_show_tutorial():
+        start_tutorial()
+
+    # Pause while the game isn't viewable (swiped away, backgrounded, covered).
+    Minit.viewable_changed.connect(_on_viewable_changed)
+    get_tree().paused = not Minit.is_viewable()
+
+func _on_viewable_changed(viewable: bool):
+    get_tree().paused = not viewable
+
 func _on_game_over(final_score: int):
     # Submit the final result — call exactly once at game end. Higher score = better.
     # Time-based games (meta.json resultSorting fastestTime/slowestTime): pass SECONDS,
@@ -84,6 +95,16 @@ gracefully: writes become a `print`, and reads fall back to URL query params
 - **`get_user_data`** returns host-injected `window.minit.userData` when present,
   else the `?userData` URL param, else `null`. Returns `""` (empty string,
   distinct from `null`) if the stored value is the empty string.
+- **`should_show_tutorial`**: `?tutorial=1|true` forces it on, `?tutorial=0|false`
+  off; otherwise true unless the host reports `window.minit.hasPlayedGame === true`.
+  Outside a web export it returns true.
+- **`is_viewable`** returns the host's `window.minit.isViewable()` when the host
+  provides `isViewable`, `addEventListener`, and `removeEventListener` (mobile app
+  only), else `document.visibilityState === "visible"`. Outside a web export it
+  returns true.
+- **`viewable_changed`** fires only on an actual value change, from the host's
+  `viewableChange` event or else `document` `visibilitychange` — chosen once when
+  the `Minit` autoload is ready. Never emitted outside a web export.
 
 ## Building a Minit-ready HTML5 bundle
 
