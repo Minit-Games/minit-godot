@@ -99,3 +99,18 @@ func get_user_data():
 	if typeof(raw) != TYPE_STRING or raw == "" or raw == "null": return null
 	var val = JSON.parse_string(raw)
 	return val if typeof(val) == TYPE_STRING else null
+
+
+## Whether to run the first-play tutorial. Call it before creating any tutorial
+## UI; on false, show none. `?tutorial=1|true` forces it on, `?tutorial=0|false`
+## forces it off; otherwise it shows unless the host reports
+## `window.minit.hasPlayedGame === true`. Outside a web export it returns true.
+func should_show_tutorial() -> bool:
+	if not _has_bridge(): return true
+	var forced := get_config_value("tutorial")
+	if forced == "1" or forced == "true": return true
+	if forced == "0" or forced == "false": return false
+	var raw = JavaScriptBridge.eval(
+		"(function(){try{return JSON.stringify(!!(window.minit&&window.minit.hasPlayedGame===true));}" +
+		"catch(e){return 'false';}})()")
+	return not (typeof(raw) == TYPE_STRING and raw == "true")
