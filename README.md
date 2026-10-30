@@ -61,7 +61,13 @@ func _ready():
     # Scale effects by the page's motion policy; use the tier for finer tuning.
     var effect_scale := 0.5 if Minit.get_motion_quality() == "reduced" else 1.0
     var device_tier := Minit.get_device_tier()
+    if device_tier == "low":
+        effect_scale *= 0.5
+    $Particles2D.amount_ratio = effect_scale
+
     var reduce_motion := Minit.prefers_reduced_motion()
+    if not reduce_motion:
+        create_tween().tween_property($Camera2D, "offset", Vector2.ZERO, 0.15)
 
     # Pause while the game isn't viewable (swiped away, backgrounded, covered).
     Minit.viewable_changed.connect(_on_viewable_changed)
