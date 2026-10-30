@@ -126,6 +126,50 @@ func should_show_tutorial() -> bool:
 	return not (typeof(raw) == TYPE_STRING and raw == "true")
 
 
+## Returns the effects quality selected for this game page load.
+func get_motion_quality() -> String:
+	if not _has_bridge(): return "full"
+	var forced := get_config_value("motionQuality")
+	if forced == "full" or forced == "reduced": return forced
+	var raw = JavaScriptBridge.eval(
+		"(function(){try{var v=window.minit&&window.minit.motionQuality;" +
+		"return JSON.stringify(v==='full'||v==='reduced'?v:null);}" +
+		"catch(e){return 'null';}})()")
+	if typeof(raw) == TYPE_STRING and raw != "" and raw != "null":
+		var val = JSON.parse_string(raw)
+		if val == "full" or val == "reduced": return val
+	return "reduced" if prefers_reduced_motion() else "full"
+
+
+## Whether the player prefers reduced motion.
+func prefers_reduced_motion() -> bool:
+	if not _has_bridge(): return false
+	var forced := get_config_value("reducedMotion")
+	if forced == "1" or forced == "true": return true
+	if forced == "0" or forced == "false": return false
+	var raw = JavaScriptBridge.eval(
+		"(function(){try{var v=window.minit&&window.minit.prefersReducedMotion;" +
+		"if(typeof v==='boolean'){return JSON.stringify(v);}" +
+		"return JSON.stringify(typeof window.matchMedia==='function'&&" +
+		"window.matchMedia('(prefers-reduced-motion: reduce)').matches);}" +
+		"catch(e){return 'false';}})()")
+	return typeof(raw) == TYPE_STRING and raw == "true"
+
+
+## Returns the device capability tier for finer effects tuning.
+func get_device_tier() -> String:
+	if not _has_bridge(): return "unknown"
+	var forced := get_config_value("deviceTier")
+	if forced == "low" or forced == "medium" or forced == "high" or forced == "unknown": return forced
+	var raw = JavaScriptBridge.eval(
+		"(function(){try{var v=window.minit&&window.minit.deviceTier;" +
+		"return JSON.stringify(v==='low'||v==='medium'||v==='high'||v==='unknown'?v:null);}" +
+		"catch(e){return 'null';}})()")
+	if typeof(raw) != TYPE_STRING or raw == "" or raw == "null": return "unknown"
+	var val = JSON.parse_string(raw)
+	return val if val == "low" or val == "medium" or val == "high" or val == "unknown" else "unknown"
+
+
 ## Whether the game is currently viewable: the feed item is active and focused
 ## and the app is in the foreground. Uses the host's `window.minit.isViewable()`
 ## when the host provides it, else `document.visibilityState === "visible"`.
