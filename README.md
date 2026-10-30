@@ -58,6 +58,11 @@ func _ready():
     if Minit.should_show_tutorial():
         start_tutorial()
 
+    # Scale effects by the page's motion policy; use the tier for finer tuning.
+    var effect_scale := 0.5 if Minit.get_motion_quality() == "reduced" else 1.0
+    var device_tier := Minit.get_device_tier()
+    var reduce_motion := Minit.prefers_reduced_motion()
+
     # Pause while the game isn't viewable (swiped away, backgrounded, covered).
     Minit.viewable_changed.connect(_on_viewable_changed)
     get_tree().paused = not Minit.is_viewable()
@@ -77,9 +82,9 @@ func _on_game_over(final_score: int):
 
 Outside the Minit host — the **editor**, a **desktop build**, or an HTML5 build
 opened without the host injecting `window.minit` — every call degrades
-gracefully: writes become a `print`, and reads fall back to URL query params
-(`?difficulty=hard`, `?userData=5`), exactly like the Unity SDK falls back to
-`Debug.Log`. Safe to call from anywhere.
+gracefully: writes become a `print`, and reads use their documented local
+fallbacks and accepted URL query params (`?difficulty=hard`, `?userData=5`).
+Safe to call from anywhere.
 
 ### Contract details (identical to `@minit-games/sdk`)
 
@@ -98,6 +103,21 @@ gracefully: writes become a `print`, and reads fall back to URL query params
 - **`should_show_tutorial`**: `?tutorial=1|true` forces it on, `?tutorial=0|false`
   off; otherwise true unless the host reports `window.minit.hasPlayedGame === true`.
   Outside a web export it returns true.
+- **`get_motion_quality`** resolves `?motionQuality=full|reduced`, then the valid
+  host value, then `"reduced"` when `prefers_reduced_motion()` is true and
+  `"full"` otherwise. Outside a web export it returns `"full"`. Under the
+  default `motion_quality` remote-config value `"full"`, a low-tier device still
+  reports `"full"` unless the OS reduced-motion setting is enabled.
+- **`prefers_reduced_motion`** resolves `?reducedMotion=1|true|0|false`, then a
+  boolean host value, then the browser's `prefers-reduced-motion: reduce` media
+  query (false when unavailable). Outside a web export it returns false.
+- **`get_device_tier`** resolves `?deviceTier=low|medium|high|unknown`, then a
+  valid host value, then `"unknown"`. Outside a web export it returns
+  `"unknown"`; use this getter for finer effects tuning. Web players and Studio
+  previews have no runtime tier field, so they use the fallback unless
+  overridden.
+- Test these paths in a web preview with `?motionQuality=reduced`,
+  `?deviceTier=low`, or `?reducedMotion=1`. Invalid override values are ignored.
 - **`is_viewable`** returns the host's `window.minit.isViewable()` when the host
   provides `isViewable`, `addEventListener`, and `removeEventListener` (mobile app
   only), else `document.visibilityState === "visible"`. Outside a web export it
