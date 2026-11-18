@@ -27,9 +27,14 @@ const HOST_VIEWABILITY_JS := "m&&typeof m.isViewable==='function'&&typeof m.addE
 ## change. Never emitted outside a web export.
 signal viewable_changed(viewable: bool)
 
+## Emitted after a device-motion permission request resolves. State is
+## "granted", "denied", or "unsupported".
+signal device_motion_permission_resolved(state: String)
+
 var _last_viewable := true
 # JavaScriptBridge frees the JS callback once its last Godot reference is gone.
 var _viewable_callback: JavaScriptObject
+var _device_motion_permission_callback: JavaScriptObject
 
 # JavaScriptBridge only functions in web exports. OS.has_feature("web") is the
 # canonical "are we running on the web?" check — the analog of Defold's
@@ -156,6 +161,36 @@ func prefers_reduced_motion() -> bool:
 	return typeof(raw) == TYPE_STRING and raw == "true"
 
 
+## Request access to device motion on the player's next tap or click.
+func request_device_motion_permission() -> void:
+	if not _has_bridge():
+		_emit_device_motion_permission_resolved.call_deferred("unsupported")
+		return
+	if _device_motion_permission_callback == null:
+		_device_motion_permission_callback = JavaScriptBridge.create_callback(_on_js_device_motion_permission_resolved)
+	var window = JavaScriptBridge.get_interface("window")
+	if _device_motion_permission_callback == null or window == null:
+		_emit_device_motion_permission_resolved.call_deferred("unsupported")
+		return
+	window.__minitGodotDeviceMotionPermissionResolved = _device_motion_permission_callback
+	var raw = JavaScriptBridge.eval(
+		"(function(){try{var cb=window.__minitGodotDeviceMotionPermissionResolved;" +
+		"if(typeof cb!=='function'){return 'false';}" +
+		"var done=false;var onGesture=function(){if(done){return;}done=true;" +
+		"document.removeEventListener('touchend',onGesture,true);document.removeEventListener('click',onGesture,true);" +
+		"var resolve=function(state){cb(state);};try{var motionEvent=window.DeviceMotionEvent;" +
+		"if(!motionEvent){resolve('unsupported');return;}" +
+		"if(typeof motionEvent.requestPermission!=='function'){resolve('granted');return;}" +
+		"var requests=[motionEvent.requestPermission()];var orientationEvent=window.DeviceOrientationEvent;" +
+		"if(orientationEvent&&typeof orientationEvent.requestPermission==='function'){requests.push(orientationEvent.requestPermission());}" +
+		"Promise.all(requests).then(function(permissions){for(var i=0;i<permissions.length;i++){" +
+		"if(permissions[i]!=='granted'){resolve('denied');return;}}resolve('granted');},function(){resolve('denied');});" +
+		"}catch(e){resolve('denied');}};document.addEventListener('touchend',onGesture,true);" +
+		"document.addEventListener('click',onGesture,true);return 'true';}catch(e){return 'false';}})()")
+	if not (typeof(raw) == TYPE_STRING and raw == "true"):
+		_emit_device_motion_permission_resolved.call_deferred("unsupported")
+
+
 ## Returns the device capability tier for finer effects tuning.
 func get_device_tier() -> String:
 	if not _has_bridge(): return "unknown"
@@ -218,6 +253,16 @@ func _start_viewable_polling() -> void:
 func _on_js_viewable_changed(args: Array) -> void:
 	if args.is_empty() or typeof(args[0]) != TYPE_BOOL: return
 	_update_viewable(args[0])
+
+
+func _on_js_device_motion_permission_resolved(args: Array) -> void:
+	if args.is_empty() or typeof(args[0]) != TYPE_STRING: return
+	if args[0] != "granted" and args[0] != "denied" and args[0] != "unsupported": return
+	_emit_device_motion_permission_resolved(args[0])
+
+
+func _emit_device_motion_permission_resolved(state: String) -> void:
+	device_motion_permission_resolved.emit(state)
 
 
 func _update_viewable(viewable: bool) -> void:

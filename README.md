@@ -69,9 +69,19 @@ func _ready():
     if not reduce_motion:
         create_tween().tween_property($Camera2D, "offset", Vector2.ZERO, 0.15)
 
+    # Arm the permission request before showing a "tap to enable motion" prompt.
+    # It resolves on the player's next tap or click, not from an engine input handler.
+    Minit.device_motion_permission_resolved.connect(_on_device_motion_permission_resolved)
+    Minit.request_device_motion_permission()
+    show_enable_motion_prompt()
+
     # Pause while the game isn't viewable (swiped away, backgrounded, covered).
     Minit.viewable_changed.connect(_on_viewable_changed)
     get_tree().paused = not Minit.is_viewable()
+
+func _on_device_motion_permission_resolved(state: String):
+    if state == "granted":
+        enable_device_motion()
 
 func _on_viewable_changed(viewable: bool):
     get_tree().paused = not viewable
@@ -117,6 +127,11 @@ Safe to call from anywhere.
 - **`prefers_reduced_motion`** resolves `?reducedMotion=1|true|0|false`, then a
   boolean host value, then the browser's `prefers-reduced-motion: reduce` media
   query (false when unavailable). Outside a web export it returns false.
+- **`request_device_motion_permission`** arms a one-shot browser gesture listener
+  and emits **`device_motion_permission_resolved(state)`** with `"granted"`,
+  `"denied"`, or `"unsupported"` on the player's next tap or click. Call it
+  before showing a "tap to enable motion" prompt, not from engine input handlers.
+  Outside a web export it resolves to `"unsupported"` via a deferred signal.
 - **`get_device_tier`** resolves `?deviceTier=low|medium|high|unknown`, then a
   valid host value, then `"unknown"`. Outside a web export it returns
   `"unknown"`; use this getter for finer effects tuning. Web players and Studio
