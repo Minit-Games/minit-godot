@@ -132,6 +132,10 @@ Safe to call from anywhere.
   `"denied"`, or `"unsupported"` on the player's next tap or click. Call it
   before showing a "tap to enable motion" prompt, not from engine input handlers.
   Outside a web export it resolves to `"unsupported"` via a deferred signal.
+  `"granted"` only means the browser allows motion access, not that readings
+  will arrive: desktop browsers grant it with no sensor behind it. Switch to tilt
+  once real readings come in, keep touch controls available for every result,
+  and test tilt on a real phone, on iOS and Android.
 - **`get_device_tier`** resolves `?deviceTier=low|medium|high|unknown`, then a
   valid host value, then `"unknown"`. Outside a web export it returns
   `"unknown"`; use this getter for finer effects tuning. Web players and Studio
