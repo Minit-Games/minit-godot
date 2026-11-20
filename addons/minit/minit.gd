@@ -74,10 +74,10 @@ func report_result(score, options: Dictionary = {}) -> void:
 	if options.has("user_data"):   host_options["userData"] = { "value": options["user_data"] }
 
 	if _has_bridge():
-		# JSON is valid JS, so we embed an object literal the browser eval reads
-		# back. JSON.stringify guarantees valid escaping of strings/quotes.
-		var payload := JSON.stringify({ "score": score, "options": host_options })
-		var js := "(function(){var p=%s;if(window.minit&&window.minit.reportResult){window.minit.reportResult(p.score,p.options);}else{console.log('[Minit] reportResult',p.score,p.options);}})();" % payload
+		# Embedded as a JSON string and parsed, not as an object literal: a literal
+		# would turn a "__proto__" key into a prototype instead of an own property.
+		var payload := JSON.stringify(JSON.stringify({ "score": score, "options": host_options }))
+		var js := "(function(){var p=JSON.parse(%s);if(window.minit&&window.minit.reportResult){window.minit.reportResult(p.score,p.options);}else{console.log('[Minit] reportResult',p.score,p.options);}})();" % payload
 		JavaScriptBridge.eval(js)
 	else:
 		print(LOG_PREFIX, " reportResult ", score)
@@ -93,8 +93,8 @@ func track(key: String, props: Dictionary = {}) -> void:
 		host_props[prop_key] = _track_value(props[prop_key])
 
 	if _has_bridge():
-		var payload := JSON.stringify({ "key": key, "props": host_props })
-		var js := "(function(){var p=%s;if(window.minit&&window.minit.track){window.minit.track(p.key,p.props);}else{console.log('[Minit] track',p.key,p.props);}})();" % payload
+		var payload := JSON.stringify(JSON.stringify({ "key": key, "props": host_props }))
+		var js := "(function(){var p=JSON.parse(%s);if(window.minit&&window.minit.track){window.minit.track(p.key,p.props);}else{console.log('[Minit] track',p.key,p.props);}})();" % payload
 		JavaScriptBridge.eval(js)
 	else:
 		print(LOG_PREFIX, " track ", key, " ", host_props)
