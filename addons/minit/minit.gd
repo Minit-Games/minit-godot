@@ -83,6 +83,36 @@ func report_result(score, options: Dictionary = {}) -> void:
 		print(LOG_PREFIX, " reportResult ", score)
 
 
+## Track a custom event, e.g. `Minit.track("level_complete", { "level": 3 })`.
+## key: 1–64 chars of A-Z a-z 0-9 _ . - (the "minit." prefix is reserved).
+## props: up to 20 entries; values are bool, finite number, or String (≤ 256 chars).
+## The host validates and rate-limits; an invalid event is dropped there.
+func track(key: String, props: Dictionary = {}) -> void:
+	var host_props := {}
+	for prop_key in props:
+		host_props[prop_key] = _track_value(props[prop_key])
+
+	if _has_bridge():
+		var payload := JSON.stringify({ "key": key, "props": host_props })
+		var js := "(function(){var p=%s;if(window.minit&&window.minit.track){window.minit.track(p.key,p.props);}else{console.log('[Minit] track',p.key,p.props);}})();" % payload
+		JavaScriptBridge.eval(js)
+	else:
+		print(LOG_PREFIX, " track ", key, " ", host_props)
+
+
+# An unsupported value becomes null so the host drops the event instead of
+# receiving a coerced value.
+func _track_value(value):
+	match typeof(value):
+		TYPE_BOOL, TYPE_INT, TYPE_STRING:
+			return value
+		TYPE_STRING_NAME:
+			return String(value)
+		TYPE_FLOAT:
+			return value if is_finite(value) else null
+	return null
+
+
 ## Read a game config value from URL query parameters.
 ## Returns `default` when the key is absent or reserved. The `userData` key is
 ## reserved and always returns `default`.
