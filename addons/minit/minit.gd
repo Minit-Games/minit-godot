@@ -84,9 +84,9 @@ func report_result(score, options: Dictionary = {}) -> void:
 
 
 ## Track a custom event, e.g. `Minit.track("level_complete", { "level": 3 })`.
-## key: 1–64 chars of A-Z a-z 0-9 _ . - (the "minit." prefix is reserved).
-## props: up to 20 entries; values are bool, finite number, or String (≤ 256 chars).
-## The host validates and rate-limits; an invalid event is dropped there.
+## key: any non-empty string (the "minit." prefix is reserved).
+## props: values are bool, finite number, or String.
+## The host validates; an invalid event is dropped there.
 func track(key: String, props: Dictionary = {}) -> void:
 	var host_props := {}
 	for prop_key in props:

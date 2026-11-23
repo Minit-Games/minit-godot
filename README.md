@@ -114,10 +114,12 @@ Safe to call from anywhere.
   to match `UserDataPatchSchema` in `@minit/shared/zod`. Games pass a bare
   string; the wrapping is an SDK-internal detail.
 - **`track`** forwards `(key, props)` to `window.minit.track`; the host validates
-  and rate-limits, dropping an invalid event. Keys are 1–64 chars of
-  `A-Z a-z 0-9 _ . -` and must not start with `minit.` (reserved). Up to 20 props;
-  any value other than a bool, finite number, or String is sent as `null`, so the
-  host drops the event. Without a host it logs the event and does nothing else.
+  the event. Keys and prop keys are any non-empty string; keys must not start with
+  `minit.` (reserved). Any prop value other than a bool, finite number, or String
+  is sent as `null`, so the host drops the event. The only limit is a 4 KB budget
+  of events per play (about 70–100 events with 1–2 props); an event that doesn't
+  fit the remaining budget is dropped. Without a host it logs the event and does
+  nothing else.
 - **`get_config_value`** returns `default` when the key is absent; the reserved
   key `"userData"` always returns `default` so it never bleeds into config.
   Declare the game's config keys in your build's `meta.json` `config` array —
