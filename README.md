@@ -116,8 +116,8 @@ Safe to call from anywhere.
 - **`track`** forwards `(key, props)` to `window.minit.track`; the host validates
   the event. Keys and prop keys are any non-empty string; keys must not start with
   `minit.` (reserved). Any prop value other than a bool, finite number, or String
-  is sent as `null`, so the host drops the event. The only limit is a 4 KB budget
-  of events per play (about 70–100 events with 1–2 props); an event that doesn't
+  is sent as `null`, so the host drops the event. The only limit is a 3 KB budget
+  of events per play (about 50–75 events with 1–2 props); an event that doesn't
   fit the remaining budget is dropped. Without a host it logs the event and does
   nothing else.
 - **`get_config_value`** returns `default` when the key is absent; the reserved
