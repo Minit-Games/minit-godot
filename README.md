@@ -86,6 +86,10 @@ func _on_device_motion_permission_resolved(state: String):
 func _on_viewable_changed(viewable: bool):
     get_tree().paused = not viewable
 
+func _on_level_complete(level: int):
+    # Track a custom event; prop values are bool, finite number, or String.
+    Minit.track("level_complete", { "level": level })
+
 func _on_game_over(final_score: int):
     # Submit the final result — call exactly once at game end. Higher score = better.
     # Time-based games (meta.json resultSorting fastestTime/slowestTime): pass SECONDS,
@@ -109,6 +113,13 @@ Safe to call from anywhere.
 - **`report_result`** wraps `user_data` into `{ value: "<string>" }` on the wire
   to match `UserDataPatchSchema` in `@minit/shared/zod`. Games pass a bare
   string; the wrapping is an SDK-internal detail.
+- **`track`** forwards `(key, props)` to `window.minit.track`; the host validates
+  the event. Keys and prop keys are any non-empty string; keys must not start with
+  `minit.` (reserved). Any prop value other than a bool, finite number, or String
+  is sent as `null`, so the host drops the event. The only limit is a 3 KB budget
+  of events per play (about 50–75 events with 1–2 props); an event that doesn't
+  fit the remaining budget is dropped. Without a host it logs the event and does
+  nothing else.
 - **`get_config_value`** returns `default` when the key is absent; the reserved
   key `"userData"` always returns `default` so it never bleeds into config.
   Declare the game's config keys in your build's `meta.json` `config` array —
